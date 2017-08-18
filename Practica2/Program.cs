@@ -2,15 +2,22 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Practica2
 {
     internal class Program
     {
+        public static List<string> Abecedario { get; } = new List<string> { "0", "1" };
+        //public List<string> Abecedario { get; } = new List<string>
+        //{
+        //    "a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"
+        //};
+
         private static void Main()
         {
             var folder = Environment.CurrentDirectory + "\\Textos\\";
-            var pathTexto = $"{folder}cooldark.txt";
+            var pathTexto = $"{folder}muestra1.txt";
             var pathTextoProcesado = $"{folder}textoProcesado.txt";
             string texto;
             if (!File.Exists(pathTextoProcesado)) ProcesarTexto(pathTexto, pathTextoProcesado, out texto);
@@ -24,7 +31,7 @@ namespace Practica2
             switch (opc)
             {
                 case 1:
-                    ProbabilidadSinMemoria(transiciones);
+                    //ProbabilidadSinMemoria(transiciones);
                     break;
                 case 2:
                     ProbabilidadConMemoria(transiciones);
@@ -35,19 +42,23 @@ namespace Practica2
 
         private static void ProbabilidadConMemoria(List<TipoTransicion> transiciones)
         {
-
-        }
-
-        private static void ProbabilidadSinMemoria(IReadOnlyCollection<TipoTransicion> transiciones)
-        {
-            var totalTransiciones = transiciones.Count;
-            foreach (var transicion in transiciones)
+            foreach (var letra in Abecedario)
             {
-                Console.WriteLine($"{transicion.Transicion} {(double)transicion.Cantidad / totalTransiciones}");
-                if (transicion.Cantidad > totalTransiciones)
-                    ;
+                foreach (var letter in Abecedario)
+                {
+                    decimal nominador = transiciones.First(t => t.Transicion.Equals(letra + letter)).Cantidad;
+                    decimal denominador = transiciones
+                        .FindAll(t => t.Transicion.StartsWith(letra))
+                        .Sum(t => t.Cantidad);
+                    Console.WriteLine($"Probabilidad de trasmitir {letter} dado {letra} {nominador / denominador}");
+                }
             }
         }
+
+        //private static void ProbabilidadSinMemoria(IReadOnlyCollection<TipoTransicion> transiciones)
+        //{
+
+        //}
 
         /// <summary>
         /// Cuenta y registra las transiciones en una lista
@@ -76,7 +87,6 @@ namespace Practica2
                     });
                 }
             }
-
             return transiciones;
         }
 
@@ -88,51 +98,9 @@ namespace Practica2
         /// <param name="texto">Texto a asignar</param>
         private static void ProcesarTexto(string pathTexto, string pathTextoProcesado, out string texto)
         {
-            texto = File.ReadAllText(pathTexto)
-                .Replace("!", string.Empty)
-                .Replace("#", string.Empty)
-                .Replace("$", string.Empty)
-                .Replace("%", string.Empty)
-                .Replace("&", string.Empty)
-                .Replace("/", string.Empty)
-                .Replace("(", string.Empty)
-                .Replace(")", string.Empty)
-                .Replace("=", string.Empty)
-                .Replace("?", string.Empty)
-                .Replace("'", string.Empty)
-                .Replace("¡", string.Empty)
-                .Replace("¿", string.Empty)
-                .Replace("<", string.Empty)
-                .Replace(">", string.Empty)
-                .Replace("<", string.Empty)
-                .Replace("´", string.Empty)
-                .Replace("¨", string.Empty)
-                .Replace("*", string.Empty)
-                .Replace("+", string.Empty)
-                .Replace("~", string.Empty)
-                .Replace("{", string.Empty)
-                .Replace("}", string.Empty)
-                .Replace("[", string.Empty)
-                .Replace("]", string.Empty)
-                .Replace("`", string.Empty)
-                .Replace(",", string.Empty)
-                .Replace(";", string.Empty)
-                .Replace(".", string.Empty)
-                .Replace(":", string.Empty)
-                .Replace("-", string.Empty)
-                .Replace("_", string.Empty)
-                .Replace("\t", string.Empty)
-                .Replace("\n", string.Empty)
-                .Replace("‘", string.Empty)
-                .Replace("’", string.Empty)
-                .Replace(" ", string.Empty)
-                .Replace("*", string.Empty)
-                .Replace("\"", string.Empty)
-                .Replace(" ", string.Empty)
-                .Replace("|", string.Empty)
-                .Replace("^", string.Empty)
-                .Replace(Environment.NewLine, string.Empty);
-
+            var rgx = new Regex("[^a-zA-Z0-9_]+");
+            texto = File.ReadAllText(pathTexto).ToLower();
+            texto = rgx.Replace(texto, string.Empty);
             File.WriteAllText(pathTextoProcesado, texto);
         }
     }
